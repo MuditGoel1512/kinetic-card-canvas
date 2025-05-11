@@ -1,6 +1,12 @@
 
 import React, { useRef, useState } from 'react';
 import { useMousePosition } from '@/hooks/useMousePosition';
+import { Star, Clock } from 'lucide-react';
+
+interface Stat {
+  label: string;
+  value: string;
+}
 
 interface Card3DProps {
   title: string;
@@ -10,6 +16,8 @@ interface Card3DProps {
   className?: string;
   gradientFrom?: string;
   gradientTo?: string;
+  stats?: Stat[];
+  badge?: string;
 }
 
 export const Card3D: React.FC<Card3DProps> = ({
@@ -18,8 +26,10 @@ export const Card3D: React.FC<Card3DProps> = ({
   content,
   image,
   className = '',
-  gradientFrom = 'from-indigo-900',
-  gradientTo = 'to-purple-800',
+  gradientFrom = 'from-blue-900',
+  gradientTo = 'to-cyan-800',
+  stats,
+  badge,
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -110,6 +120,39 @@ export const Card3D: React.FC<Card3DProps> = ({
           }}
         />
 
+        {/* Particles effect (small dots in background) */}
+        <div className="absolute inset-0 overflow-hidden">
+          {[...Array(15)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute rounded-full bg-white/30"
+              style={{
+                width: `${Math.random() * 5 + 2}px`,
+                height: `${Math.random() * 5 + 2}px`,
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+                opacity: isHovered ? 0.7 : 0.3,
+                transition: 'opacity 0.5s ease-out',
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Badge - if provided */}
+        {badge && (
+          <div
+            className="absolute top-4 right-4 px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm text-white text-xs font-medium flex items-center gap-1 border border-white/20"
+            style={{
+              transformStyle: 'preserve-3d',
+              transform: isHovered ? 'translateZ(80px)' : 'translateZ(30px)',
+              transition: 'all 0.3s ease-out',
+            }}
+          >
+            <Star className="w-3 h-3" />
+            <span>{badge}</span>
+          </div>
+        )}
+
         {/* Content container */}
         <div
           className="relative p-6 flex flex-col h-full z-10"
@@ -119,22 +162,24 @@ export const Card3D: React.FC<Card3DProps> = ({
             transition: 'transform 0.3s ease-out',
           }}
         >
-          {/* Image */}
+          {/* Image with improved animation */}
           {image && (
             <div
-              className="mb-4 overflow-hidden rounded-lg"
+              className="mb-4 overflow-hidden rounded-lg relative"
               style={{
                 transformStyle: 'preserve-3d',
                 transform: isHovered ? 'translateZ(30px)' : 'translateZ(10px)',
                 transition: 'transform 0.3s ease-out',
               }}
             >
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10" />
               <img
                 src={image}
                 alt={title}
-                className="w-full h-40 object-cover rounded-lg transition-transform duration-500"
+                className="w-full h-40 object-cover rounded-lg transition-all duration-500"
                 style={{
                   transform: isHovered ? 'scale(1.05)' : 'scale(1)',
+                  filter: isHovered ? 'brightness(1.1) contrast(1.1)' : 'none',
                 }}
               />
             </div>
@@ -151,7 +196,10 @@ export const Card3D: React.FC<Card3DProps> = ({
             >
               <h3 className="text-2xl font-bold text-white mb-1">{title}</h3>
               {subtitle && (
-                <h4 className="text-lg text-white/80 mb-3">{subtitle}</h4>
+                <div className="flex items-center gap-2 mb-3">
+                  <h4 className="text-lg text-white/80">{subtitle}</h4>
+                  <div className="flex-grow h-px bg-white/20"></div>
+                </div>
               )}
             </div>
             <p
@@ -164,22 +212,50 @@ export const Card3D: React.FC<Card3DProps> = ({
             >
               {content}
             </p>
+            
+            {/* Stats bar */}
+            {stats && stats.length > 0 && (
+              <div 
+                className="grid grid-cols-2 gap-2 mb-4"
+                style={{
+                  transformStyle: 'preserve-3d',
+                  transform: isHovered ? 'translateZ(50px)' : 'translateZ(25px)',
+                  transition: 'transform 0.3s ease-out',
+                }}
+              >
+                {stats.map((stat, index) => (
+                  <div key={index} className="bg-white/10 backdrop-blur-sm rounded-lg p-2 border border-white/10">
+                    <div className="text-xs text-white/50">{stat.label}</div>
+                    <div className="text-sm font-semibold text-white">{stat.value}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
             <div
-              className="mt-auto"
+              className="mt-auto flex justify-between items-center"
               style={{
                 transformStyle: 'preserve-3d',
                 transform: isHovered ? 'translateZ(70px)' : 'translateZ(40px)',
                 transition: 'transform 0.3s ease-out',
               }}
             >
-              <button className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-300 backdrop-blur-sm border border-white/10 shadow-lg">
-                {rotationMode === 'limited' ? 'Enable 360° Rotation' : 'Limit Rotation'}
+              <div className="flex items-center gap-1 text-xs text-white/50">
+                <Clock className="w-3 h-3" />
+                <span>Limited Time</span>
+              </div>
+              <button className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-300 backdrop-blur-sm border border-white/10 shadow-lg group">
+                {rotationMode === 'limited' ? (
+                  <span className="group-hover:scale-105 inline-block transition-transform">Enable 360°</span>
+                ) : (
+                  <span className="group-hover:scale-105 inline-block transition-transform">Limit Rotation</span>
+                )}
               </button>
             </div>
           </div>
         </div>
         
-        {/* Shine effect */}
+        {/* Enhanced shine effect */}
         <div
           className="absolute inset-0 rounded-xl opacity-0 pointer-events-none"
           style={{
@@ -188,7 +264,7 @@ export const Card3D: React.FC<Card3DProps> = ({
                 mousePosition.x - cardRef.current?.getBoundingClientRect().left || 0
               }px ${
                 mousePosition.y - cardRef.current?.getBoundingClientRect().top || 0
-              }px, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 80%)` : '',
+              }px, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 80%)` : '',
             opacity: isHovered ? '1' : '0',
             transition: 'opacity 0.3s ease-out',
           }}
@@ -197,7 +273,7 @@ export const Card3D: React.FC<Card3DProps> = ({
       
       {/* Card shadow */}
       <div
-        className="absolute bottom-0 left-1/2 w-[90%] h-[10px] rounded-full bg-purple-900/30 blur-md -translate-x-1/2"
+        className="absolute bottom-0 left-1/2 w-[90%] h-[10px] rounded-full bg-blue-900/30 blur-md -translate-x-1/2"
         style={{
           transform: isHovered 
             ? 'translate(-50%, 20px) scale(0.95)' 
