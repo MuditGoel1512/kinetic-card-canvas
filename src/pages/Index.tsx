@@ -4,8 +4,30 @@ import { Card3D } from '@/components/Card3D';
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-950 to-gray-900 py-20 px-4 flex flex-col items-center">
-      <h1 className="text-4xl font-bold text-white mb-10 text-center">Interactive 3D Cards</h1>
+    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-950 via-gray-900 to-black py-20 px-4 flex flex-col items-center relative overflow-hidden">
+      {/* Floating particles in background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {[...Array(40)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full bg-cyan-500/10"
+            style={{
+              width: `${Math.random() * 4 + 2}px`,
+              height: `${Math.random() * 4 + 2}px`,
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              boxShadow: '0 0 10px 2px rgba(34, 211, 238, 0.1)',
+              animation: `float ${Math.random() * 10 + 10}s linear infinite`,
+              animationDelay: `${Math.random() * 5}s`
+            }}
+          />
+        ))}
+      </div>
+      
+      {/* Main content */}
+      <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-cyan-100 mb-2 text-center">Interactive 3D Cards</h1>
+      <p className="text-cyan-300/70 mb-10 max-w-lg text-center">Experience the power of 3D transformations and immersive effects with our interactive cards collection</p>
+      
       <div className="max-w-5xl w-full grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         <Card3D
           title="Galactic Explorer"
@@ -50,10 +72,47 @@ const Index = () => {
           badge="Ultimate Challenge"
         />
       </div>
-      <div className="mt-16 text-white/70 text-center">
-        <p className="mb-4">Hover over the cards to see the 3D effect in action!</p>
+      
+      <div className="mt-16 text-cyan-300/50 text-center max-w-md">
+        <p className="mb-4">Hover over the cards to see the 3D effect and smoke animation in action!</p>
         <p>Click on a card to toggle between limited tilt and full 360° rotation modes.</p>
       </div>
+      
+      {/* Add keyframes animation to the stylesheet */}
+      <style jsx global>{`
+        @keyframes float {
+          0% {
+            transform: translateY(0) translateX(0);
+          }
+          25% {
+            transform: translateY(-20px) translateX(10px);
+          }
+          50% {
+            transform: translateY(0) translateX(20px);
+          }
+          75% {
+            transform: translateY(20px) translateX(10px);
+          }
+          100% {
+            transform: translateY(0) translateX(0);
+          }
+        }
+        
+        @keyframes smoke {
+          0% {
+            transform: translateY(0) scale(1);
+            opacity: 0.6;
+          }
+          50% {
+            transform: translateY(-15px) scale(1.5);
+            opacity: 0.3;
+          }
+          100% {
+            transform: translateY(-30px) scale(1);
+            opacity: 0;
+          }
+        }
+      `}</style>
     </div>
   );
 };

@@ -88,6 +88,37 @@ export const Card3D: React.FC<Card3DProps> = ({
       onMouseLeave={handleMouseLeave}
       onClick={handleCardClick}
     >
+      {/* Smoke effect overlay - appears on hover */}
+      <div 
+        className={`absolute inset-0 w-full h-full pointer-events-none z-10 opacity-0 transition-opacity duration-700 ${isHovered ? 'opacity-100' : ''}`}
+        style={{
+          transform: 'translateZ(30px)',
+        }}
+      >
+        <div className="smoke-container absolute inset-0 overflow-hidden rounded-xl">
+          {[...Array(8)].map((_, i) => (
+            <div
+              key={i}
+              className="smoke-particle absolute"
+              style={{
+                width: `${Math.random() * 40 + 20}px`,
+                height: `${Math.random() * 40 + 20}px`,
+                backgroundColor: 'transparent',
+                boxShadow: '0 0 40px 20px rgba(131, 242, 255, 0.15)',
+                borderRadius: '50%',
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+                opacity: isHovered ? 0.8 : 0,
+                filter: 'blur(8px)',
+                animation: `smoke ${Math.random() * 4 + 3}s linear infinite`,
+                transform: `scale(${isHovered ? 1 : 0})`,
+                transition: 'all 0.8s ease-out',
+              }}
+            />
+          ))}
+        </div>
+      </div>
+
       <div
         className={`relative flex flex-col rounded-xl overflow-hidden h-full ${isHovered ? 'z-10' : ''}`}
         style={{
