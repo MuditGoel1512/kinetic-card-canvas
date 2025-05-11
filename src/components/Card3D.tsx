@@ -18,25 +18,28 @@ export const Card3D: React.FC<Card3DProps> = ({
   content,
   image,
   className = '',
-  gradientFrom = 'from-purple-500',
-  gradientTo = 'to-blue-600',
+  gradientFrom = 'from-indigo-900',
+  gradientTo = 'to-purple-800',
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const mousePosition = useMousePosition();
-  const [mouseEnterPosition, setMouseEnterPosition] = useState({ x: 0, y: 0 });
-
-  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+  const [rotationMode, setRotationMode] = useState<'limited' | 'full'>('limited');
+  
+  const handleMouseEnter = () => {
     setIsHovered(true);
-    setMouseEnterPosition({ x: e.clientX, y: e.clientY });
   };
 
   const handleMouseLeave = () => {
     setIsHovered(false);
   };
 
+  const handleCardClick = () => {
+    setRotationMode(prev => prev === 'limited' ? 'full' : 'limited');
+  };
+
   const calculateRotation = () => {
-    if (!cardRef.current || !isHovered) return { x: 0, y: 0 };
+    if (!cardRef.current || !isHovered) return { x: 0, y: 0, z: 0 };
     
     const card = cardRef.current;
     const cardRect = card.getBoundingClientRect();
@@ -45,10 +48,23 @@ export const Card3D: React.FC<Card3DProps> = ({
     const cardCenterY = cardRect.top + cardRect.height / 2;
     
     // Calculate rotation based on mouse position relative to card center
-    const rotateY = ((mousePosition.x - cardCenterX) / (cardRect.width / 2)) * 10;
-    const rotateX = -((mousePosition.y - cardCenterY) / (cardRect.height / 2)) * 10;
-    
-    return { x: rotateX, y: rotateY };
+    if (rotationMode === 'limited') {
+      const rotateY = ((mousePosition.x - cardCenterX) / (cardRect.width / 2)) * 15;
+      const rotateX = -((mousePosition.y - cardCenterY) / (cardRect.height / 2)) * 15;
+      return { x: rotateX, y: rotateY, z: 0 };
+    } else {
+      // Full 360 rotation mode
+      const dx = mousePosition.x - cardCenterX;
+      const dy = mousePosition.y - cardCenterY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      // Calculate angle in degrees
+      const angleY = (dx / cardRect.width) * 180;
+      const angleX = -(dy / cardRect.height) * 180;
+      const angleZ = (distance / Math.max(cardRect.width, cardRect.height)) * 45;
+      
+      return { x: angleX, y: angleY, z: angleZ };
+    }
   };
 
   const rotation = calculateRotation();
@@ -56,37 +72,38 @@ export const Card3D: React.FC<Card3DProps> = ({
   return (
     <div
       ref={cardRef}
-      className={`relative perspective-1000 ${className}`}
-      style={{ perspective: '1000px' }}
+      className={`relative perspective-1000 cursor-pointer ${className}`}
+      style={{ perspective: '1500px' }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onClick={handleCardClick}
     >
       <div
-        className={`relative flex flex-col rounded-xl overflow-hidden ${isHovered ? 'z-10' : ''}`}
+        className={`relative flex flex-col rounded-xl overflow-hidden h-full ${isHovered ? 'z-10' : ''}`}
         style={{
           transform: isHovered
-            ? `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) scale3d(1.05, 1.05, 1.05)`
+            ? `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) rotateZ(${rotation.z}deg) scale3d(1.05, 1.05, 1.05)`
             : 'rotateX(0) rotateY(0) scale3d(1, 1, 1)',
           transition: isHovered
-            ? 'transform 0.1s ease-out'
+            ? 'transform 0.15s ease-out'
             : 'transform 0.5s ease-out',
           transformStyle: 'preserve-3d',
         }}
       >
         {/* Card background with gradient */}
         <div
-          className={`absolute inset-0 bg-gradient-to-br ${gradientFrom} ${gradientTo} opacity-80`}
+          className={`absolute inset-0 bg-gradient-to-br ${gradientFrom} ${gradientTo} opacity-90`}
           style={{
             transformStyle: 'preserve-3d',
             transform: 'translateZ(-10px)',
             transition: 'all 0.3s ease-out',
-            opacity: isHovered ? '0.9' : '0.8',
+            opacity: isHovered ? '1' : '0.9',
           }}
         />
         
         {/* Glass overlay */}
         <div
-          className="absolute inset-0 backdrop-blur-sm bg-white/10 border border-white/20 rounded-xl shadow-xl"
+          className="absolute inset-0 backdrop-blur-md bg-black/30 border border-white/10 rounded-xl shadow-2xl"
           style={{
             transformStyle: 'preserve-3d',
             transform: 'translateZ(0)',
@@ -155,8 +172,8 @@ export const Card3D: React.FC<Card3DProps> = ({
                 transition: 'transform 0.3s ease-out',
               }}
             >
-              <button className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-all duration-300 backdrop-blur-sm border border-white/10 shadow-lg">
-                Learn More
+              <button className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-300 backdrop-blur-sm border border-white/10 shadow-lg">
+                {rotationMode === 'limited' ? 'Enable 360° Rotation' : 'Limit Rotation'}
               </button>
             </div>
           </div>
@@ -171,7 +188,7 @@ export const Card3D: React.FC<Card3DProps> = ({
                 mousePosition.x - cardRef.current?.getBoundingClientRect().left || 0
               }px ${
                 mousePosition.y - cardRef.current?.getBoundingClientRect().top || 0
-              }px, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 80%)` : '',
+              }px, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 80%)` : '',
             opacity: isHovered ? '1' : '0',
             transition: 'opacity 0.3s ease-out',
           }}
@@ -180,12 +197,12 @@ export const Card3D: React.FC<Card3DProps> = ({
       
       {/* Card shadow */}
       <div
-        className="absolute bottom-0 left-1/2 w-[90%] h-[10px] rounded-full bg-black/20 blur-md -translate-x-1/2"
+        className="absolute bottom-0 left-1/2 w-[90%] h-[10px] rounded-full bg-purple-900/30 blur-md -translate-x-1/2"
         style={{
           transform: isHovered 
             ? 'translate(-50%, 20px) scale(0.95)' 
             : 'translate(-50%, 12px) scale(0.85)',
-          opacity: isHovered ? '0.3' : '0.2',
+          opacity: isHovered ? '0.5' : '0.3',
           transition: 'transform 0.5s ease-out, opacity 0.5s ease-out',
         }}
       />
