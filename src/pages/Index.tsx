@@ -1,8 +1,56 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card3D } from '@/components/Card3D';
 
 const Index = () => {
+  // Add global styles using useEffect and a style element
+  useEffect(() => {
+    // Create style element
+    const styleEl = document.createElement('style');
+    // Set the CSS text content
+    styleEl.textContent = `
+      @keyframes float {
+        0% {
+          transform: translateY(0) translateX(0);
+        }
+        25% {
+          transform: translateY(-20px) translateX(10px);
+        }
+        50% {
+          transform: translateY(0) translateX(20px);
+        }
+        75% {
+          transform: translateY(20px) translateX(10px);
+        }
+        100% {
+          transform: translateY(0) translateX(0);
+        }
+      }
+      
+      @keyframes smoke {
+        0% {
+          transform: translateY(0) scale(1);
+          opacity: 0.6;
+        }
+        50% {
+          transform: translateY(-15px) scale(1.5);
+          opacity: 0.3;
+        }
+        100% {
+          transform: translateY(-30px) scale(1);
+          opacity: 0;
+        }
+      }
+    `;
+    // Append to head
+    document.head.appendChild(styleEl);
+    
+    // Cleanup function to remove the style element when component unmounts
+    return () => {
+      document.head.removeChild(styleEl);
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-950 via-gray-900 to-black py-20 px-4 flex flex-col items-center relative overflow-hidden">
       {/* Floating particles in background */}
@@ -77,42 +125,6 @@ const Index = () => {
         <p className="mb-4">Hover over the cards to see the 3D effect and smoke animation in action!</p>
         <p>Click on a card to toggle between limited tilt and full 360° rotation modes.</p>
       </div>
-      
-      {/* Add keyframes animation to the stylesheet */}
-      <style jsx global>{`
-        @keyframes float {
-          0% {
-            transform: translateY(0) translateX(0);
-          }
-          25% {
-            transform: translateY(-20px) translateX(10px);
-          }
-          50% {
-            transform: translateY(0) translateX(20px);
-          }
-          75% {
-            transform: translateY(20px) translateX(10px);
-          }
-          100% {
-            transform: translateY(0) translateX(0);
-          }
-        }
-        
-        @keyframes smoke {
-          0% {
-            transform: translateY(0) scale(1);
-            opacity: 0.6;
-          }
-          50% {
-            transform: translateY(-15px) scale(1.5);
-            opacity: 0.3;
-          }
-          100% {
-            transform: translateY(-30px) scale(1);
-            opacity: 0;
-          }
-        }
-      `}</style>
     </div>
   );
 };
